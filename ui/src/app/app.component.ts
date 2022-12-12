@@ -9,12 +9,20 @@ import { loadDHIS2ReportsConfigs } from "./store/actions";
 import { AppState } from "./store/reducers";
 import { getIfNonLoginRoute } from "./store/selectors";
 
+import { OnDestroy, VERSION } from "@angular/core";
+import { fromEvent, merge, of, Subscription } from "rxjs";
+import { map } from "rxjs/operators";
+import { ofType } from "@ngrx/effects";
+
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
 })
-export class AppComponent implements OnInit {
+
+export class AppComponent implements OnInit, OnDestroy {
+  networkStatus = false;
+  networkStatus$: Subscription = Subscription.EMPTY;
   title = "iCare";
 
   isNonLoginRoute$: Observable<boolean>;
@@ -29,6 +37,29 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.monitorSession();
     this.isNonLoginRoute$ = this.store.pipe(select(getIfNonLoginRoute));
+    this.checkNetworkStatus();
+
+  }
+
+  ngOnDestroy(): void {
+    this.networkStatus$.unsubscribe();
+  }
+
+  checkNetworkStatus() {
+    this.networkStatus = navigator.onLine;
+    this.networkStatus$ = merge(
+      of(null),
+      fromEvent(window, 'online'),
+      fromEvent(window, 'offline')
+    )
+      .pipe(map(() => navigator.onLine))
+      .subscribe(status => {
+        console.log('status', status);
+        this.networkStatus = status;
+      });
+
+  window.alert(this.networkStatus
+    ? 'IS CONNECTED': 'IS NOT CONNECTED');
   }
 
   monitorSession() {
