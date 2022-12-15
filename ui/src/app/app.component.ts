@@ -1,11 +1,11 @@
 import { Component, OnInit } from "@angular/core";
-import { MatLegacyDialog as MatDialog } from "@angular/material/legacy-dialog";
+import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute } from "@angular/router";
 import { select, Store } from "@ngrx/store";
 import { Observable, timer } from "rxjs";
 import { LoginDialogComponent } from "./core/dialogs/login-dialog/login-dialog.component";
 import { AuthService } from "./core/services/auth.service";
-import { loadDHIS2ReportsConfigs } from "./store/actions";
+import { loadDHIS2ReportsConfigs} from "./store/actions";
 import { AppState } from "./store/reducers";
 import { getIfNonLoginRoute } from "./store/selectors";
 
