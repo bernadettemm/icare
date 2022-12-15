@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatLegacyDialog as MatDialog } from "@angular/material/legacy-dialog";
 import { MatLegacyPaginator as MatPaginator } from "@angular/material/legacy-paginator";
 import { MatLegacyTableDataSource as MatTableDataSource } from "@angular/material/legacy-table";
@@ -11,13 +11,15 @@ import { getCurrentUserDetails } from "src/app/store/selectors/current-user.sele
 import { CaptureSignatureComponent } from "../../../../../shared/components/capture-signature/capture-signature.component";
 import { UserCreateModel } from "../../../models/user.model";
 import { UserService } from "../../../services/users.service";
+import { fromEvent, merge, of, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: "app-user-management",
   templateUrl: "./user-management.component.html",
   styleUrls: ["./user-management.component.scss"],
 })
-export class UserManagementComponent implements OnInit, AfterViewInit {
+export class UserManagementComponent implements OnInit, OnDestroy, AfterViewInit {
   itemSearchTerm: string;
   addingUserItem: boolean;
   currentUser$: Observable<any>;
@@ -34,6 +36,8 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   users$: Observable<any>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   public data = {};
+  networkStatus: boolean = false;
+  networkStatus$: Subscription = Subscription.EMPTY;
 
   constructor(
     private store: Store<AppState>,
@@ -46,12 +50,31 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     // TODO: current user to be used for privilages control
     this.currentUser$ = this.store.select(getCurrentUserDetails);
+    this.checkNetworkStatus();
+  }
+
+  ngOnDestroy(): void{
+    this.networkStatus$.unsubscribe();
   }
 
   ngAfterViewInit() {
     if (this.dataSource) {
       this.dataSource.paginator = this.paginator;
     }
+  }
+
+  checkNetworkStatus() {
+    this.networkStatus = navigator.onLine;
+    this.networkStatus$ = merge(
+      of(null),
+      fromEvent(window, 'online'),
+      fromEvent(window, 'offline')
+    )
+    .pipe(map(() => navigator.onLine))
+    .subscribe(status => {
+      console.log('status', status);
+      this.networkStatus = status;
+    })
   }
 
   getRecord(row: UserCreateModel): void {
