@@ -55,8 +55,8 @@ export class PatientListFiltersComponent implements OnInit {
       // check if a value is selected and not the all option
       if (filter?.value && filter?.filterIndex === event?.value?.filterIndex) {
         if (
-          filter?.value?.display === "PENDING" ||
-          filter?.value?.display === "PAID"
+          filter?.value?.display === "XRAY" ||
+          filter?.value?.display === "UTRASONIC"
         ) {
           var searchPattern = new RegExp("^&paymentStatus=");
 
